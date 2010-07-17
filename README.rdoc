@@ -1,9 +1,71 @@
-= otaku
+= OTAKU
 
-Description goes here.
+Dead simple server/client service built using eventmachine.
+
+== Introduction
+
+Otaku's original intent is to support testing of cross-process stubbing in cross-stub (http://github.com/ngty/cross-stub). It's usefulness in other aspects of my hacking life prompts me to extract it out, & package it as a generic solution. Its primary intent is to be dead simple to use & easy to customize, of course, both criteria subjected to very my own tastes.
+
+== Getting Started
+
+It's hosted on rubygems.org:
+
+  $ sudo gem install otaku
+
+== Using It
+
+=== 1. Starting service & defining handler
+
+  require 'otaku'
+
+  Otaku.start do |data|
+    result = '~ %s ~' % data
+  end
+
+=== 2. Sending processing request
+
+  require 'otaku'
+
+  Otaku.process('hello')
+  # >> '~ hello ~'
+
+That's all !!
+
+== Configuraing It
+
+Otaku ships with the following defaults:
+
+  Otaku.address         # >> '127.0.0.1'
+  Otaku.port            # >> 10999
+  Otaku.init_wait_time  # >> 2
+  Otaku.log_file        # >> '/tmp/otaku.log'
+
+Configuring can be done via:
+
+=== 1. Configuration Proc
+
+  Otaku.configure do |config|
+    config.init_wait_time = 10
+    # (more typing, more customizing)
+  end
+
+=== 2. Configuration Hash
+
+  Otaku.configure({
+    :init_wait_time => 10
+    # (more typing, more customizing)
+  })
+
+=== 3. Writer Method
+
+  Otaku.init_wait_time = 10
+
+== TODO
+
+1. Currently, only integration testing is done ...
 
 == Note on Patches/Pull Requests
- 
+
 * Fork the project.
 * Make your feature addition or bug fix.
 * Add tests for it. This is important so I don't break it in a
@@ -14,4 +76,4 @@ Description goes here.
 
 == Copyright
 
-Copyright (c) 2010 NgTzeYang. See LICENSE for details.
+Copyright (c) since 2010 NgTzeYang. See LICENSE for details.
