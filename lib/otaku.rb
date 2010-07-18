@@ -20,6 +20,7 @@ module Otaku
   class DataProcessError < Exception ; end
 
   DEFAULTS = {
+    :ruby => 'ruby',
     :address => '127.0.0.1',
     :port => 10999,
     :log_file => '/tmp/otaku.log',

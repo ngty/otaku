@@ -22,7 +22,7 @@ module Otaku
       def run_server_script
         script = File.join(File.dirname(__FILE__), '..', 'otaku.rb')
         args = Encoder.encode(:config => Otaku.config, :handler => @handler)
-        @process = IO.popen(%|ruby #{script} "#{args.gsub('"','\"')}"|,'r')
+        @process = IO.popen(%|#{Otaku.ruby} #{script} "#{args.gsub('"','\"')}"|,'r')
         sleep Otaku.init_wait_time
       end
 
