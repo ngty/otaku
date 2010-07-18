@@ -5,7 +5,7 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "otaku"
-    gem.summary = %Q{Dead simple server/client service built using eventmachine}
+    gem.summary = %Q{Dead simple service framework built on eventmachine}
     gem.description = %Q{}
     gem.email = "ngty77@gmail.com"
     gem.homepage = "http://github.com/ngty/otaku"
