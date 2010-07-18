@@ -37,6 +37,16 @@ describe "Otaku Service" do
       Otaku.process('hello').should.equal('* hello *')
     end
 
+    should 'reflect __FILE__ as captured when declaring proc' do
+      Otaku.start{|data| __FILE__ }
+      Otaku.process(:watever_data).should.equal(__FILE__)
+    end
+
+    should 'reflect __LINE__ as captured when declaring proc' do
+      Otaku.start{|data| __LINE__ }
+      Otaku.process(:watever_data).should.equal(__LINE__.pred)
+    end
+
   end
 
 end
