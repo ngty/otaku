@@ -3,9 +3,8 @@ require 'eventmachine'
 require 'logger'
 require 'base64'
 require 'ruby2ruby'
-require 'ruby_parser'
 
-# TODO: Preliminary try, should be removed eventually !!
+# TODO: Preliminary try, should be removed eventually !! Should use RubyParser instead.
 require 'parse_tree'
 require 'parse_tree_extensions'
 
