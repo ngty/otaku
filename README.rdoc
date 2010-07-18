@@ -29,7 +29,24 @@ It's hosted on rubygems.org:
   Otaku.process('hello')
   # >> '~ hello ~'
 
-That's all !!
+=== Unfortunately ...
+
+Most of the times, we won't have anything as simple as above, the following illustrates the problem of contextual reference:
+
+  mark = '*'
+  Otaku.start do |data|
+    '%s %s %s' % [mark, data, mark]
+  end
+
+  Otaku.process('hello') # failure !!
+
+The reason is that the proc that we passed to Otaku.start is being marshalled while being passed to the server as a handler, in the process, the contextual references are lost. A workaround for this problem is:
+
+  Otaku.start(:mark => '*') do |data|
+    '%s %s %s' % [mark, data, mark]
+  end
+
+  Otaku.process('hello') # >> '* hello *'
 
 == Configuraing It
 
