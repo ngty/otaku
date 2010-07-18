@@ -3,6 +3,7 @@ require 'eventmachine'
 require 'logger'
 require 'base64'
 require 'ruby2ruby'
+require 'ruby_parser'
 
 # TODO: Preliminary try, should be removed eventually !!
 require 'parse_tree'
@@ -11,6 +12,10 @@ require 'parse_tree_extensions'
 module Otaku
 
   class HandlerNotDefinedError < Exception ; end
+
+  # //////////////////////////////////////////////////////////////////////////////////////////
+  # Otaku
+  # //////////////////////////////////////////////////////////////////////////////////////////
 
   DEFAULTS = {
     :address => '127.0.0.1',
@@ -34,9 +39,9 @@ module Otaku
       end
     end
 
-    def start(&handler)
+    def start(context = {}, &handler)
       raise HandlerNotDefinedError unless block_given?
-      Server.handler = handler
+      Server.handler = Handler.new(context, handler)
       Server.start
     end
 
@@ -48,23 +53,73 @@ module Otaku
       Client.get(data)
     end
 
+    Otaku.configure(DEFAULTS)
+
   end
 
-  DEFAULTS.each do |config, val|
-    self.send(:"#{config}=", val)
+  # //////////////////////////////////////////////////////////////////////////////////////////
+  # Otaku::Encoder
+  # //////////////////////////////////////////////////////////////////////////////////////////
+
+  module Encoder
+    class << self
+
+      def encode(thing)
+        Base64.encode64(Marshal.dump(thing))
+      end
+
+      def decode(thing)
+        Marshal.load(Base64.decode64(thing))
+      end
+
+    end
   end
+
+  # //////////////////////////////////////////////////////////////////////////////////////////
+  # Otaku::Handler
+  # //////////////////////////////////////////////////////////////////////////////////////////
+
+  class Handler
+
+    def initialize(context, handler)
+      @context = __context_as_code__(context)
+      @proc = __proc_as_code__(handler)
+    end
+
+    def [](data)
+      eval(@context).instance_exec(data, &eval(@proc))
+    end
+
+    private
+
+      def __proc_as_code__(block)
+        Ruby2Ruby.new.process(block.to_sexp)
+      end
+
+      def __context_as_code__(methods_hash)
+        'Class.new{ %s }.new' %
+          methods_hash.map do |method, val|
+            "def #{method}; Encoder.decode(%|#{Encoder.encode(val).gsub('|','\|')}|); end"
+          end.join('; ')
+      end
+
+  end
+
+  # //////////////////////////////////////////////////////////////////////////////////////////
+  # Otaku::Server
+  # //////////////////////////////////////////////////////////////////////////////////////////
 
   module Server
 
     class << self
 
-      attr_writer :handler
+      attr_accessor :handler
 
       def start(other_process=false)
         other_process ? run_evented_server : (
-          print '[Otaku] initializing at %s:%s ... ' % [Otaku.address, Otaku.port]
+          # print '[Otaku] initializing at %s:%s ... ' % [Otaku.address, Otaku.port] # DBUG
           run_server_script
-          puts 'done [pid#%s]' % @process.pid
+          # puts 'done [pid#%s]' % @process.pid # DEBUG
         )
       end
 
@@ -75,20 +130,16 @@ module Otaku
       end
 
       def run_server_script
-        args = Base64.encode64(Marshal.dump({
+        args = Encoder.encode({
           :config => Otaku.config,
-          :handler => Ruby2Ruby.new.process(@handler.to_sexp)
-        }))
+          :handler => @handler
+        })
         @process = IO.popen(%|ruby #{__FILE__} "#{args.gsub('"','\"')}"|,'r')
         sleep Otaku.init_wait_time
       end
 
       def stop
         Process.kill('SIGHUP', @process.pid) if @process
-      end
-
-      def handler
-        eval(@handler)
       end
 
       def log(*msgs)
@@ -104,18 +155,21 @@ module Otaku
 
     private
 
-      module EM
+      module EM #:nodoc:
 
         def receive_data(data)
           log 'receives data: %s' % data.inspect
           result = process_data(data)
           log 'returning result: %s' % result.inspect
-          send_data(Base64.encode64(Marshal.dump(result)))
+          send_data(Encoder.encode(result))
         end
 
         def process_data(data)
-          begin Server.handler.call(data)
-          rescue then log($!.inspect)
+          begin
+            Server.handler[data]
+          rescue
+            log(result = $!.inspect)
+            result
           end
         end
 
@@ -127,6 +181,10 @@ module Otaku
 
   end
 
+  # //////////////////////////////////////////////////////////////////////////////////////////
+  # Otaku::Client
+  # //////////////////////////////////////////////////////////////////////////////////////////
+
   module Client
 
     class << self
@@ -134,7 +192,7 @@ module Otaku
         EventMachine::run do
           EventMachine::connect(Otaku.address, Otaku.port, EM).
             execute(data) do |data|
-              @result = Marshal.load(Base64.decode64(data))
+              @result = Encoder.decode(data)
             end
         end
         @result
@@ -143,7 +201,7 @@ module Otaku
 
     private
 
-      module EM
+      module EM #:nodoc:
 
         def receive_data(data)
           @callback.call(data)
@@ -160,10 +218,10 @@ module Otaku
   end
 end
 
-if $0 == __FILE__
+if $0 == __FILE__ && (encoded_data = ARGV[0])
   begin
-    Server = Otaku::Server
-    data = Marshal.load(Base64.decode64(ARGV[0]))
+    include Otaku
+    data = Encoder.decode(encoded_data)
     Otaku.configure(data[:config])
     Server.handler = data[:handler]
     Server.start(true)
