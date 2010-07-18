@@ -56,6 +56,7 @@ Otaku ships with the following defaults:
   Otaku.port            # >> 10999
   Otaku.init_wait_time  # >> 2
   Otaku.log_file        # >> '/tmp/otaku.log'
+  Otaku.ruby            # >> 'ruby' # (the current in-use ruby)
 
 Configuring can be done via:
 
