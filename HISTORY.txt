@@ -1,3 +1,12 @@
+=== Current
+
+= New Features
+* it is now possible to specify which ruby to run the server in [#ngty]
+
+
+= House-Keeping
+* split single file into separate files for readability [#ngty]
+
 === 0.1.0 2010-07-18
 
 first gem release! [#ngty]
