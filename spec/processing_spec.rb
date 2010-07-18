@@ -14,8 +14,8 @@ describe "Otaku doing processing" do
   should 'fail when using proc that has contextual reference yet has no specified context' do
     mark = '*'
     Otaku.start{|data| '%s %s %s' % [mark, data, mark] }
-    Otaku.process('hello').should.match \
-      /#<NameError: undefined local variable or method `mark' for /
+    lambda { Otaku.process('hello') }.should.raise(Otaku::DataProcessError).
+      message.should.match(/#<NameError: undefined local variable or method `mark' for /)
   end
 
   should 'succeed when using proc that has contextual reference & has context specified' do

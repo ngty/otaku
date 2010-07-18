@@ -12,6 +12,7 @@ require 'parse_tree_extensions'
 module Otaku
 
   class HandlerNotDefinedError < Exception ; end
+  class DataProcessError < Exception ; end
 
   # //////////////////////////////////////////////////////////////////////////////////////////
   # Otaku
@@ -168,8 +169,9 @@ module Otaku
           begin
             Server.handler[data]
           rescue
-            log(result = $!.inspect)
-            result
+            error = DataProcessError.new($!.inspect)
+            log(error.inspect)
+            error
           end
         end
 
@@ -204,7 +206,8 @@ module Otaku
       module EM #:nodoc:
 
         def receive_data(data)
-          @callback.call(data)
+          result = @callback.call(data)
+          result.is_a?(DataProcessError) ? raise(result) : result
           EventMachine::stop_event_loop # ends loop & resumes program flow
         end
 
