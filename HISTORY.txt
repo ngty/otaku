@@ -1,11 +1,16 @@
 === Current
 
-= New Features
+= Features
 * it is now possible to specify which ruby to run the server in [#ngty]
 
-
-= House-Keeping
+= Maintenance
 * split single file into separate files for readability [#ngty]
+* use RubyParser instead of ParseTree [#ngty]
+
+= Issues
+* magic variable __FILE__ works as expected, but not __LINE__, in fact, __LINE__ reflects the
+  line no starting from the line where the source code is extracted from (not sure if we wanna
+  fix this problem though, unless someone explicitely ask for it)
 
 === 0.1.0 2010-07-18
 
