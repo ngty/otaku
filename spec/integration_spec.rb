@@ -39,12 +39,12 @@ describe "Otaku Service" do
 
     should 'reflect __FILE__ as captured when declaring proc' do
       Otaku.start{|data| __FILE__ }
-      Otaku.process(:watever_data).should.equal(__FILE__)
+      Otaku.process(:watever_data).should.equal(File.expand_path(__FILE__))
     end
 
-    should 'reflect __LINE__ as captured when declaring proc' do
+    should 'not reflect __LINE__ as captured when declaring proc' do
       Otaku.start{|data| __LINE__ }
-      Otaku.process(:watever_data).should.equal(__LINE__.pred)
+      Otaku.process(:watever_data).should.not.equal(__LINE__.pred)
     end
 
   end

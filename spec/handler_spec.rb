@@ -206,13 +206,21 @@ describe "Otaku Service Handler" do
     end
 
     should "handle block using { ... } [##{__LINE__}]" do
-      Otaku.start({}) { |watever| %w{a b}.map { |x| puts x } }.
-        proc.should.equal(expected)
+      Otaku.start({}) { |watever| %w{a b}.map { |x| puts x } }.proc.should.equal(expected)
     end
 
     should "handle block using { ... } [##{__LINE__}]" do
-      Otaku.start { |watever| %w{a b}.map { |x| puts x } }.
-        proc.should.equal(expected)
+      Otaku.start { |watever| %w{a b}.map { |x| puts x } }.proc.should.equal(expected)
+    end
+
+    should "handle __FILE__ correctly [##{__LINE__}]" do
+      Otaku.start { |watever| __FILE__ }.proc.should.
+        equal("proc { |watever| \"%s\" }" % File.expand_path('spec/handler_spec.rb'))
+    end
+
+    should "handle __LINE__ incorrectly [##{__LINE__}]" do
+      Otaku.start { |watever| __LINE__ }.proc.should.
+        equal("proc { |watever| 1 }")
     end
 
   end
