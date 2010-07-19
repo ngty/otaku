@@ -1,4 +1,4 @@
-=== Current
+=== 0.2.0 2010-07-19
 
 = Features
 * it is now possible to specify which ruby to run the server in [#ngty]
