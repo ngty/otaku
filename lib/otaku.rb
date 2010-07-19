@@ -5,7 +5,6 @@ require 'base64'
 require 'ruby2ruby'
 require 'ruby_parser'
 
-$LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'otaku/encoder'
 require 'otaku/handler'
 require 'otaku/server'
@@ -53,6 +52,17 @@ module Otaku
       Client.get(data)
     end
 
+    def log(*msgs)
+      @logger ||= Logger.new(Otaku.log_file)
+      [msgs].flatten.each{|msg| @logger << "[Otaku] %s\n" % msg }
+    end
+
+    def cleanup
+      @logger.close if @logger
+    end
+
+    # NOTE: Unexpected, it is possible for otaku to be required multiple times,
+    # we wanna avoid the irritating warning issued when DEFAULTS is redeclared.
     Otaku.configure(DEFAULTS)
 
   end
@@ -67,8 +77,8 @@ if $0 == __FILE__ && (encoded_data = ARGV[0])
     Server.handler = data[:handler]
     Server.start(true)
   rescue
-    Server.log($!.inspect)
+    Otaku.log $!.inspect
   ensure
-    Server.cleanup
+    Otaku.cleanup
   end
 end

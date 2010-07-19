@@ -14,7 +14,7 @@ module Otaku
       end
 
       def run_evented_server
-        log 'started with pid #%s' % Process.pid,
+        Otaku.log 'started with pid #%s' % Process.pid,
           'listening at %s:%s' % [Otaku.address, Otaku.port]
         EventMachine::run { EventMachine::start_server(Otaku.address, Otaku.port, EM) }
       end
@@ -28,15 +28,6 @@ module Otaku
 
       def stop
         Process.kill('SIGHUP', @process.pid) if @process
-      end
-
-      def log(*msgs)
-        @logger ||= Logger.new(Otaku.log_file)
-        msgs.each{|msg| @logger << "[Otaku] %s\n" % msg }
-      end
-
-      def cleanup
-        @logger.close
       end
 
     end
@@ -62,8 +53,8 @@ module Otaku
           end
         end
 
-        def log(*msg)
-          Server.log(*msg)
+        def log(*msgs)
+          Otaku.log(msgs)
         end
 
       end
