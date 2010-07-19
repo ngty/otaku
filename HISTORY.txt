@@ -1,3 +1,11 @@
+=== 0.2.1 2010-07-19
+
+= Maintenance
+* logging support is moved directly under Otaku module [#ngty]
+
+= Bug Fixes
+* closing of logger is done ONLY if the logger has been initialized [#ngty]
+
 === 0.2.0 2010-07-19
 
 = Features
