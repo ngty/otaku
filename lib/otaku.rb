@@ -21,7 +21,7 @@ module Otaku
     :address => '127.0.0.1',
     :port => 10999,
     :log_file => '/tmp/otaku.log',
-    :init_wait_time => 2
+    :init_wait_time => 2 * (RUBY_PLATFORM =~ /java/i ? 3 : 1)
   }
 
   class << self
