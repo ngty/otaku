@@ -3,10 +3,7 @@ require 'eventmachine'
 require 'logger'
 require 'base64'
 require 'ruby2ruby'
-
-# TODO: Preliminary try, should be removed eventually !! Should use RubyParser instead.
-require 'parse_tree'
-require 'parse_tree_extensions'
+require 'ruby_parser'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'otaku/encoder'

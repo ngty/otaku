@@ -13,8 +13,7 @@ begin
     gem.add_development_dependency "bacon", ">= 0"
     gem.add_dependency "eventmachine", ">= 0.12.10"
     gem.add_dependency "ruby2ruby", ">= 1.2.4"
-    # TODO: Should eventually remove requirement for ParseTree !!
-    gem.add_dependency "ParseTree", ">= 3.0.5"
+    gem.add_dependency "ruby_parser", ">= 2.0.4"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
