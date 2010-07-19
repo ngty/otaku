@@ -2,6 +2,7 @@
 
 = Features
 * it is now possible to specify which ruby to run the server in [#ngty]
+* officially support MRI-1.8.7, MRI-1.9.1, JRUBY-1.5.1 & REE-1.8.7 [#ngty]
 
 = Maintenance
 * split single file into separate files for readability [#ngty]
