@@ -1,3 +1,19 @@
+=== Current
+
+= Features
+* $LOAD_PATH include the directory where the file calling Otaku.start is located, thus
+  user no longer need to verbosely define the full path of the file to require [#ngty]
+
+= Maintenance
+* magic variable __FILE__ is now derived the same way as __LINE__ (see below) [#ngty]
+
+= Bug Fixes
+* magic variable __LINE__ now works as expected (the line where the proc is defined in file,
+  instead of the string eval line) [#ngty]
+* fixed unexpected failure in specs as a result of using installed otaku, instead of the
+  one under current project directory (by passing -I when running the sub-process server
+  script) [#ngty]
+
 === 0.2.1 2010-07-19
 
 = Maintenance
