@@ -1,4 +1,4 @@
-=== Current
+=== 0.2.2 2010-07-21
 
 = Features
 * $LOAD_PATH include the directory where the file calling Otaku.start is located, thus
