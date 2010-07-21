@@ -42,9 +42,19 @@ describe "Otaku Service" do
       Otaku.process(:watever_data).should.equal(File.expand_path(__FILE__))
     end
 
-    should 'not reflect __LINE__ as captured when declaring proc' do
+    should 'reflect __LINE__ as captured when declaring proc' do
       Otaku.start{|data| __LINE__ }
-      Otaku.process(:watever_data).should.not.equal(__LINE__.pred)
+      Otaku.process(:watever_data).should.equal(__LINE__.pred)
+    end
+
+    should 'have $LOAD_PATH include Otaku.root' do
+      Otaku.start{|data| $LOAD_PATH }
+      Otaku.process(:watever_data).should.include(Otaku.root)
+    end
+
+    should 'have $LOAD_PATH include Otaku::Server#handler.root' do
+      Otaku.start{|data| $LOAD_PATH }
+      Otaku.process(:watever_data).should.include(Otaku::Server.handler.root)
     end
 
   end

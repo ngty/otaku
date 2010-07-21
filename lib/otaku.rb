@@ -38,6 +38,10 @@ module Otaku
       end
     end
 
+    def root
+      File.expand_path(File.dirname(__FILE__))
+    end
+
     def start(context = {}, &handler)
       raise HandlerNotDefinedError unless block_given?
       Server.handler = Handler.new(context, handler)

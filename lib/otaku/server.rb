@@ -20,9 +20,10 @@ module Otaku
       end
 
       def run_server_script
-        script = File.join(File.dirname(__FILE__), '..', 'otaku.rb')
+        script = File.join(Otaku.root, 'otaku.rb')
         args = Encoder.encode(:config => Otaku.config, :handler => @handler)
-        @process = IO.popen(%|#{Otaku.ruby} #{script} "#{args.gsub('"','\"')}"|,'r')
+        load_paths = [@handler.root, Otaku.root].join(' -I')
+        @process = IO.popen(%|#{Otaku.ruby} -I#{load_paths} #{script} "#{args.gsub('"','\"')}"|,'r')
         sleep Otaku.init_wait_time
       end
 
@@ -45,7 +46,7 @@ module Otaku
 
         def process_data(data)
           begin
-            Server.handler[data]
+            Server.handler.process(data)
           rescue
             error = DataProcessError.new($!.inspect)
             log(error.inspect)
