@@ -31,7 +31,7 @@ describe "Otaku Service Handler" do
 
   describe '>> initializing proc' do
 
-    expected = "proc { |watever| [\"a\", \"b\"].map { |x| puts(x) } }"
+    expected = "lambda { |watever| [\"a\", \"b\"].map { |x| puts(x) } }"
 
     {
     # ////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ describe "Otaku Service Handler" do
         end
       ),
       __LINE__ => (
-        proc { |watever|
+        lambda { |watever|
           %w{a b}.map{|x|
             puts x
           }
@@ -98,7 +98,7 @@ describe "Otaku Service Handler" do
         end
       ),
       __LINE__ => (
-        proc { |watever|
+        lambda { |watever|
           %w{a b}.map{|x| puts x }
         }
       ),
@@ -125,7 +125,7 @@ describe "Otaku Service Handler" do
         proc do |watever| %w{a b}.map do |x| puts x end end
       ),
       __LINE__ => (
-        proc { |watever| %w{a b}.map{|x| puts x } }
+        lambda { |watever| %w{a b}.map{|x| puts x } }
       ),
       __LINE__ => (
         Proc.new do |watever| %w{a b}.map do |x| puts x end end
@@ -213,14 +213,32 @@ describe "Otaku Service Handler" do
       Otaku.start { |watever| %w{a b}.map { |x| puts x } }.proc.should.equal(expected)
     end
 
-    should "handle __FILE__ correctly [##{__LINE__}]" do
+    should "leave __FILE__ as __FILE__ [##{__LINE__}]" do
       Otaku.start { |watever| __FILE__ }.proc.should.
-        equal("proc { |watever| \"%s\" }" % File.expand_path('spec/handler_spec.rb'))
+        equal("lambda { |watever| __FILE__ }" % File.expand_path('spec/handler_spec.rb'))
     end
 
-    should "handle __LINE__ incorrectly [##{__LINE__}]" do
+    should "leave __LINE__ as __LINE__ [##{__LINE__}]" do
       Otaku.start { |watever| __LINE__ }.proc.should.
-        equal("proc { |watever| 1 }")
+        equal("lambda { |watever| __LINE__ }")
+    end
+
+  end
+
+  describe '>> fetching root' do
+    should 'return directory of current file' do
+      Otaku.start { |watever| __LINE__ }.root.should.equal(File.expand_path(File.dirname(__FILE__)))
+    end
+  end
+
+  describe '>> processing specified data' do
+
+    should 'reflect __FILE__ captured when the proc was 1st defined' do
+      Otaku.start{ |watever| __FILE__ }.process(:fake_data).should.equal(File.expand_path(__FILE__))
+    end
+
+    should 'reflect __LINE__ captured when the proc was 1st defined' do
+      Otaku.start{ |watever| __LINE__ }.process(:fake_data).should.equal(__LINE__)
     end
 
   end
