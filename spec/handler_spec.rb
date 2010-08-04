@@ -6,13 +6,22 @@ end
 
 Otaku.instance_eval do
   def start(context = {}, &block)
-    Otaku::Handler.new({}, block)
+    Otaku::Handler.new(context, block)
+  end
+end
+
+class Otaku::Handler::Context
+  alias_method :orig_magic_proc, :magic_proc
+  attr_reader :magic_procs
+  def magic_proc(val)
+    (@magic_procs ||= []) << orig_magic_proc(val)
+    @magic_procs.last
   end
 end
 
 describe "Otaku Service Handler" do
 
-  describe '>> initializing context' do
+  describe '>> initializing @context' do
 
     should 'assign to empty anoynmous class instance code when given {}' do
       Otaku::Handler.new({}, lambda{}).context.code.should.equal('Class.new{  }.new')
@@ -27,9 +36,582 @@ describe "Otaku Service Handler" do
       ])
     end
 
+    describe '>>> handling serializing of proc variable' do
+
+      class << self
+
+        def new_otaku_handler(*args, &block)
+          Otaku::Handler.new({:processor => block}, lambda{})
+        end
+
+        def should_have_expected_context(context, code, line)
+          context.magic_procs[0].code.should.equal(code)
+          context.magic_procs[0].file.should.equal(File.expand_path(__FILE__))
+          context.magic_procs[0].line.should.equal(line)
+        end
+
+      end
+
+      no_arg_expected = "lambda { [\"a\", \"b\"].map { |x| puts(x) } }"
+      single_arg_expected = "lambda { |arg| [\"a\", \"b\"].map { |x| puts(x) } }"
+      multiple_args_expected = "lambda { |arg1, arg2| [\"a\", \"b\"].map { |x| puts(x) } }"
+      unlimited_args_expected = "lambda { |*args| [\"a\", \"b\"].map { |x| puts(x) } }"
+
+      {
+      # ////////////////////////////////////////////////////////////////////////
+      # >> Always newlinling (single arg)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |arg|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          lambda { |arg|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          single_arg_expected
+        ],
+        __LINE__ => [
+          proc do |arg|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          lambda { |arg|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          single_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new do |arg|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new { |arg|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          single_arg_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> Always newlinling (multiple args)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |arg1, arg2|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          lambda { |arg1, arg2|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          proc do |arg1, arg2|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          lambda { |arg1, arg2|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          Proc.new do |arg1, arg2|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          Proc.new { |arg1, arg2|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          multiple_args_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> Always newlinling (unlimited args)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |*args|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          lambda { |*args|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          proc do |*args|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          lambda { |*args|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          Proc.new do |*args|
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          Proc.new { |*args|
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          unlimited_args_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> Always newlinling (no arg)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          lambda {
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          no_arg_expected
+        ],
+        __LINE__ => [
+          proc do
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          lambda {
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          no_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new do
+            %w{a b}.map do |x|
+              puts x
+            end
+          end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new {
+            %w{a b}.map{|x|
+              puts x
+            }
+          },
+          no_arg_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> Partial newlining (single arg)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |arg|
+            %w{a b}.map do |x| puts x end
+          end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          lambda { |arg|
+            %w{a b}.map{|x| puts x }
+          },
+          single_arg_expected
+        ],
+        __LINE__ => [
+          proc do |arg|
+            %w{a b}.map do |x| puts x end
+          end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          lambda { |arg|
+            %w{a b}.map{|x| puts x }
+          },
+          single_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new do |arg|
+            %w{a b}.map do |x| puts x end
+          end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new { |arg|
+            %w{a b}.map{|x| puts x }
+          },
+          single_arg_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> Partial newlining (multiple args)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |arg1, arg2|
+            %w{a b}.map do |x| puts x end
+          end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          lambda { |arg1, arg2|
+            %w{a b}.map{|x| puts x }
+          },
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          proc do |arg1, arg2|
+            %w{a b}.map do |x| puts x end
+          end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          lambda { |arg1, arg2|
+            %w{a b}.map{|x| puts x }
+          },
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          Proc.new do |arg1, arg2|
+            %w{a b}.map do |x| puts x end
+          end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          Proc.new { |arg1, arg2|
+            %w{a b}.map{|x| puts x }
+          },
+          multiple_args_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> Partial newlining (unlimited args)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |*args|
+            %w{a b}.map do |x| puts x end
+          end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          lambda { |*args|
+            %w{a b}.map{|x| puts x }
+          },
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          proc do |*args|
+            %w{a b}.map do |x| puts x end
+          end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          lambda { |*args|
+            %w{a b}.map{|x| puts x }
+          },
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          Proc.new do |*args|
+            %w{a b}.map do |x| puts x end
+          end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          Proc.new { |*args|
+            %w{a b}.map{|x| puts x }
+          },
+          unlimited_args_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> Partial newlining (no args)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do
+            %w{a b}.map do |x| puts x end
+          end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          lambda {
+            %w{a b}.map{|x| puts x }
+          },
+          no_arg_expected
+        ],
+        __LINE__ => [
+          proc do
+            %w{a b}.map do |x| puts x end
+          end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          lambda {
+            %w{a b}.map{|x| puts x }
+          },
+          no_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new do
+            %w{a b}.map do |x| puts x end
+          end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new {
+            %w{a b}.map{|x| puts x }
+          },
+          no_arg_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> No newlining (single arg)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |arg| %w{a b}.map do |x| puts x end end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          lambda { |arg| %w{a b}.map{|x| puts x } },
+          single_arg_expected
+        ],
+        __LINE__ => [
+          proc do |arg| %w{a b}.map do |x| puts x end end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          lambda { |arg| %w{a b}.map{|x| puts x } },
+          single_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new do |arg| %w{a b}.map do |x| puts x end end,
+          single_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new { |arg| %w{a b}.map{|x| puts x } },
+          single_arg_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> No newlining (multiple args)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |arg1, arg2| %w{a b}.map do |x| puts x end end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          lambda { |arg1, arg2| %w{a b}.map{|x| puts x } },
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          proc do |arg1, arg2| %w{a b}.map do |x| puts x end end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          lambda { |arg1, arg2| %w{a b}.map{|x| puts x } },
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          Proc.new do |arg1, arg2| %w{a b}.map do |x| puts x end end,
+          multiple_args_expected
+        ],
+        __LINE__ => [
+          Proc.new { |arg1, arg2| %w{a b}.map{|x| puts x } },
+          multiple_args_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> No newlining (unlimited args)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do |*args| %w{a b}.map do |x| puts x end end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          lambda { |*args| %w{a b}.map{|x| puts x } },
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          proc do |*args| %w{a b}.map do |x| puts x end end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          lambda { |*args| %w{a b}.map{|x| puts x } },
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          Proc.new do |*args| %w{a b}.map do |x| puts x end end,
+          unlimited_args_expected
+        ],
+        __LINE__ => [
+          Proc.new { |*args| %w{a b}.map{|x| puts x } },
+          unlimited_args_expected
+        ],
+      # ////////////////////////////////////////////////////////////////////////
+      # >> No newlining (no args)
+      # ////////////////////////////////////////////////////////////////////////
+        __LINE__ => [
+          lambda do %w{a b}.map do |x| puts x end end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          lambda { %w{a b}.map{|x| puts x } },
+          no_arg_expected
+        ],
+        __LINE__ => [
+          proc do %w{a b}.map do |x| puts x end end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          lambda { %w{a b}.map{|x| puts x } },
+          no_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new do %w{a b}.map do |x| puts x end end,
+          no_arg_expected
+        ],
+        __LINE__ => [
+          Proc.new { %w{a b}.map{|x| puts x } },
+          no_arg_expected
+        ],
+      }.each do |debug, (block, expected)|
+        should "handle proc variable [##{debug}]" do
+          magic_proc = Otaku::Handler::MagicProc.new(block)
+          encoded = Otaku::Encoder.encode(magic_proc).gsub('|','\|')
+          context = Otaku::Handler.new({:processor => block}, lambda{}).context
+          context.code.should.equal \
+            'Class.new{ %s }.new' % "def processor; Encoder.decode(%|#{encoded}|).eval!; end"
+          should_have_expected_context(context, expected, debug.succ)
+        end
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) do
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, no_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler do
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, no_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler 1, 2 do
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, no_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) do %w{a b}.map{|x| puts x } end
+        ).context, no_arg_expected, __LINE__ - 1)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler do %w{a b}.map{|x| puts x } end
+        ).context, no_arg_expected, __LINE__ - 1)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler 1, 2 do %w{a b}.map{|x| puts x } end
+        ).context, no_arg_expected, __LINE__ - 1)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) {
+            %w{a b}.map{|x| puts x }
+          }
+        ).context, no_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler {
+            %w{a b}.map{|x| puts x }
+          }
+        ).context, no_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) { %w{a b}.map{|x| puts x } }
+        ).context, no_arg_expected, __LINE__ - 1)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler { %w{a b}.map{|x| puts x } }
+        ).context, no_arg_expected, __LINE__ - 1)
+      end
+
+    end
+
   end
 
-  describe '>> initializing proc' do
+  describe '>> initializing @processor' do
 
     expected = "lambda { |watever| [\"a\", \"b\"].map { |x| puts(x) } }"
 
@@ -223,6 +805,54 @@ describe "Otaku Service Handler" do
         equal("lambda { |watever| __LINE__ }")
     end
 
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => lambda {'dummy'}) { |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      }.processor.code.should.equal(expected)
+    end
+
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => proc {'dummy'}) { |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      }.processor.code.should.equal(expected)
+    end
+
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => Proc.new {'dummy'}) { |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      }.processor.code.should.equal(expected)
+    end
+
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => lambda {'dummy'}) do |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      end.processor.code.should.equal(expected)
+    end
+
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => proc {'dummy'}) do |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      end.processor.code.should.equal(expected)
+    end
+
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => Proc.new {'dummy'}) do |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      end.processor.code.should.equal(expected)
+    end
+
   end
 
   describe '>> fetching root' do
@@ -231,13 +861,23 @@ describe "Otaku Service Handler" do
     end
   end
 
-  describe '>> processing specified data' do
+  describe '>> processing magic variables' do
 
-    should 'reflect __FILE__ captured when the proc was 1st defined' do
+    should "reflect __FILE__ captured when the proc was 1st defined [##{__LINE__}]" do
+      Otaku.start(:processor => lambda { __FILE__ }) { |watever| processor.call }.
+        process(:fake_data).should.equal(File.expand_path(__FILE__))
+    end
+
+    should "reflect __FILE__ captured when the proc was 1st defined [##{__LINE__}]" do
       Otaku.start{ |watever| __FILE__ }.process(:fake_data).should.equal(File.expand_path(__FILE__))
     end
 
-    should 'reflect __LINE__ captured when the proc was 1st defined' do
+    should "reflect __LINE__ captured when the proc was 1st defined [##{__LINE__}]" do
+      Otaku.start(:processor => lambda { __LINE__ }) { |watever| processor.call }.
+        process(:fake_data).should.equal(__LINE__.pred)
+    end
+
+    should "reflect __LINE__ captured when the proc was 1st defined [##{__LINE__}]" do
       Otaku.start{ |watever| __LINE__ }.process(:fake_data).should.equal(__LINE__)
     end
 

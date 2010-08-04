@@ -8,13 +8,21 @@ module Otaku
       attr_reader :file, :line, :code
 
       def initialize(block)
-        @block = block
+        @cache = {:block => block}
         extract_file_and_line_and_code
-        @block = nil
+        @cache = nil
       end
 
       def eval!
         eval(@code, nil, @file, @line)
+      end
+
+      def marshal_dump
+        [@code, @file, @line]
+      end
+
+      def marshal_load(data)
+        @code, @file, @line = data
       end
 
       private
@@ -39,47 +47,52 @@ module Otaku
           ignore, start_marker, arg =
             [:ignore, :start_marker, :arg].map{|key| code_match_args[key] }
           [
-            "proc #{start_marker} |#{arg}| ",
+            arg ? "proc #{start_marker} |#{arg}|" : "proc #{start_marker}",
             source_code.sub(ignore, '')
           ]
         end
 
         def sexp_regexp
-          @sexp_regexp ||= (
+          @cache[:sexp_regexp] ||= (
             Regexp.new([
               Regexp.quote("s(:iter, s(:call, nil, :"),
               "(proc|lambda)",
-              Regexp.quote(", s(:arglist)), s(:lasgn, :#{code_match_args[:arg]}), s("),
+              Regexp.quote(", s(:arglist)), "),
+              '(%s|%s|%s)' % [
+                Regexp.quote('s(:masgn, s(:array, s('),
+                Regexp.quote('s(:lasgn, :'),
+                Regexp.quote('nil, s(')
+              ]
             ].join)
           )
         end
 
         def frag_regexp
-          @frag_regexp ||= (
+          @cache[:frag_regexp] ||= (
             end_marker = {'do' => 'end', '{' => '\}'}[code_match_args[:start_marker]]
             /^(.*?\W#{end_marker})/m
           )
         end
 
         def code_regexp
-          @code_regexp ||=
-            /^(.*?(lambda|proc|Proc\.new)\s*(do|\{)\s*\|(\w+)\|\s*)/m
+          @cache[:code_regexp] ||=
+            /^(.*?(lambda|proc|Proc\.new)?\s*(do|\{)\s*(\|(.*?)\|\s*)?)/m
         end
 
         def code_match_args
-          @code_match_args ||= (
+          @cache[:code_match_args] ||= (
             args = source_code.match(code_regexp)
             {
               :ignore => args[1],
               :start_marker => args[3],
-              :arg => args[4]
+              :arg => args[5]
             }
           )
         end
 
         def source_code
-          @source_code ||= (
-            file, line = /^#<Proc:0x[0-9A-Fa-f]+@(.+):(\d+).*?>$/.match(@block.inspect)[1..2]
+          @cache[:source_code] ||= (
+            file, line = /^#<Proc:0x[0-9A-Fa-f]+@(.+):(\d+).*?>$/.match(@cache[:block].inspect)[1..2]
             @file = File.expand_path(file)
             @line = line.to_i
             File.readlines(@file)[@line.pred .. -1].join

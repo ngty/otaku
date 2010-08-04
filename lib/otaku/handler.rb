@@ -20,5 +20,13 @@ module Otaku
       File.dirname(@processor.file)
     end
 
+    def marshal_dump
+      [@context, @processor]
+    end
+
+    def marshal_load(data)
+      @context, @processor = data
+    end
+
   end
 end

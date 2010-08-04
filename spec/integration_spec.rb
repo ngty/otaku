@@ -32,8 +32,13 @@ describe "Otaku Service" do
         message.should.match(/#<NameError: undefined local variable or method `mark' for /)
     end
 
-    should 'succeed w proc that has contextual reference & has context specified' do
+    should 'succeed w proc that has non-proc contextual reference & has context specified' do
       Otaku.start(:mark => '*') {|data| '%s %s %s' % [mark, data, mark] }
+      Otaku.process('hello').should.equal('* hello *')
+    end
+
+    should 'succeed w proc that has proc contextual reference & has context specified' do
+      Otaku.start(:mark => lambda { '*' }) {|data| '%s %s %s' % [mark.call, data, mark.call] }
       Otaku.process('hello').should.equal('* hello *')
     end
 
