@@ -42,9 +42,32 @@ module Otaku
             )
           end
 
+          def code_match_args
+            @cache[:code_match_args] ||= (
+              arg_idx, marker_idx = 5, 3
+              args = source_code.match(code_regexp)
+              while args && prob_regexp =~ args[1]
+                arg_idx, marker_idx = 4, 2
+                args = source_code.match(revised_regexp(args[1]))
+              end
+              {
+                :ignore => args[1],
+                :start_marker => args[marker_idx],
+                :arg => args[arg_idx]
+              }
+            )
+          end
+
           def code_regexp
-            @cache[:code_regexp] ||=
-              /^(.*?(Otaku\.start.*?|lambda|proc|Proc\.new)\s*(do|\{)\s*(\|(\w+)\|\s*))/m
+            /^(.*?(Otaku\.start.*?|lambda|proc|Proc\.new)\s*(do|\{)\s*(\|(\w+)\|\s*))/m
+          end
+
+          def revised_regexp(e)
+            /^(.*?#{Regexp.quote(e)}.*?\s*(\{|do)\s*(\|(\w+)\|)\s*)/m
+          end
+
+          def prob_regexp
+            /Otaku\.start.*?(lambda|proc|Proc\.new)\s*(\{|do)\s*\|\w+\|\s*$/m
           end
 
         end

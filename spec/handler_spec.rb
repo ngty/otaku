@@ -537,6 +537,8 @@ describe "Otaku Service Handler" do
         end
       end
 
+      # No args
+
       should "handle block using do ... end [##{__LINE__}]" do
         should_have_expected_context((
           new_otaku_handler(1, 2) do
@@ -605,6 +607,222 @@ describe "Otaku Service Handler" do
         should_have_expected_context((
           new_otaku_handler { %w{a b}.map{|x| puts x } }
         ).context, no_arg_expected, __LINE__ - 1)
+      end
+
+      # Single arg
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) do |arg|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, single_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler do |arg|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, single_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler 1, 2 do |arg|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, single_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) do |arg| %w{a b}.map{|x| puts x } end
+        ).context, single_arg_expected, __LINE__ - 1)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler do |arg| %w{a b}.map{|x| puts x } end
+        ).context, single_arg_expected, __LINE__ - 1)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler 1, 2 do |arg| %w{a b}.map{|x| puts x } end
+        ).context, single_arg_expected, __LINE__ - 1)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) { |arg|
+            %w{a b}.map{|x| puts x }
+          }
+        ).context, single_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler { |arg|
+            %w{a b}.map{|x| puts x }
+          }
+        ).context, single_arg_expected, __LINE__ - 3)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) { |arg| %w{a b}.map{|x| puts x } }
+        ).context, single_arg_expected, __LINE__ - 1)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler { |arg| %w{a b}.map{|x| puts x } }
+        ).context, single_arg_expected, __LINE__ - 1)
+      end
+
+      # Multiple args
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) do |arg1, arg2|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, multiple_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler do |arg1, arg2|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, multiple_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler 1, 2 do |arg1, arg2|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, multiple_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) do |arg1, arg2| %w{a b}.map{|x| puts x } end
+        ).context, multiple_args_expected, __LINE__ - 1)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler do |arg1, arg2| %w{a b}.map{|x| puts x } end
+        ).context, multiple_args_expected, __LINE__ - 1)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler 1, 2 do |arg1, arg2| %w{a b}.map{|x| puts x } end
+        ).context, multiple_args_expected, __LINE__ - 1)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) { |arg1, arg2|
+            %w{a b}.map{|x| puts x }
+          }
+        ).context, multiple_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler { |arg1, arg2|
+            %w{a b}.map{|x| puts x }
+          }
+        ).context, multiple_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) { |arg1, arg2| %w{a b}.map{|x| puts x } }
+        ).context, multiple_args_expected, __LINE__ - 1)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler { |arg1, arg2| %w{a b}.map{|x| puts x } }
+        ).context, multiple_args_expected, __LINE__ - 1)
+      end
+
+      # Unlimited args
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) do |*args|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, unlimited_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler do |*args|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, unlimited_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler 1, 2 do |*args|
+            %w{a b}.map{|x| puts x }
+          end
+        ).context, unlimited_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) do |*args| %w{a b}.map{|x| puts x } end
+        ).context, unlimited_args_expected, __LINE__ - 1)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler do |*args| %w{a b}.map{|x| puts x } end
+        ).context, unlimited_args_expected, __LINE__ - 1)
+      end
+
+      should "handle block using do ... end [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler 1, 2 do |*args| %w{a b}.map{|x| puts x } end
+        ).context, unlimited_args_expected, __LINE__ - 1)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) { |*args|
+            %w{a b}.map{|x| puts x }
+          }
+        ).context, unlimited_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler { |*args|
+            %w{a b}.map{|x| puts x }
+          }
+        ).context, unlimited_args_expected, __LINE__ - 3)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler(1, 2) { |*args| %w{a b}.map{|x| puts x } }
+        ).context, unlimited_args_expected, __LINE__ - 1)
+      end
+
+      should "handle block using { ... } [##{__LINE__}]" do
+        should_have_expected_context((
+          new_otaku_handler { |*args| %w{a b}.map{|x| puts x } }
+        ).context, unlimited_args_expected, __LINE__ - 1)
       end
 
     end
@@ -839,6 +1057,30 @@ describe "Otaku Service Handler" do
 
     should "handle block with context variable as proc [##{__LINE__}]" do
       Otaku.start(:processor => proc {'dummy'}) do |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      end.processor.code.should.equal(expected)
+    end
+
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => proc {|arg| 'dummy'}) do |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      end.processor.code.should.equal(expected)
+    end
+
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => proc {|arg1, arg2| 'dummy'}) do |watever|
+        %w{a b}.map do |x|
+          puts x
+        end
+      end.processor.code.should.equal(expected)
+    end
+
+    should "handle block with context variable as proc [##{__LINE__}]" do
+      Otaku.start(:processor => proc {|*args| 'dummy'}) do |watever|
         %w{a b}.map do |x|
           puts x
         end
