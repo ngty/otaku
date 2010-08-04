@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{otaku}
-  s.version = "0.2.2"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["NgTzeYang"]
-  s.date = %q{2010-07-21}
+  s.date = %q{2010-08-05}
   s.description = %q{}
   s.email = %q{ngty77@gmail.com}
   s.extra_rdoc_files = [
@@ -28,6 +28,9 @@ Gem::Specification.new do |s|
      "lib/otaku/client.rb",
      "lib/otaku/encoder.rb",
      "lib/otaku/handler.rb",
+     "lib/otaku/handler/context.rb",
+     "lib/otaku/handler/magic_proc.rb",
+     "lib/otaku/handler/processor.rb",
      "lib/otaku/server.rb",
      "otaku.gemspec",
      "spec/handler_spec.rb",
@@ -42,7 +45,12 @@ Gem::Specification.new do |s|
   s.test_files = [
     "spec/integration_spec.rb",
      "spec/handler_spec.rb",
-     "spec/spec_helper.rb"
+     "spec/spec_helper.rb",
+     "examples/unittest/client.rb",
+     "examples/unittest/tests/b_test.rb",
+     "examples/unittest/tests/a_test.rb",
+     "examples/unittest/server.rb",
+     "examples/unittest/server2.rb"
   ]
 
   if s.respond_to? :specification_version then

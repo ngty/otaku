@@ -1,3 +1,11 @@
+=== 0.3.0 2010-08-05
+
+= Features
+* Proc can now be passed as a context to Otaku.start [#ngty]
+
+= Maintenance
+* Cleaning up Otaku::Handler [#ngty]
+
 === 0.2.2 2010-07-21
 
 = Features
