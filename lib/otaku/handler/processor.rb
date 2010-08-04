@@ -3,16 +3,12 @@ module Otaku
     class Processor #:nodoc:
 
       extend Forwardable
-      def_delegator :@magic_proc, :file
-      def_delegator :@magic_proc, :line
-      def_delegator :@magic_proc, :code
+      %w{file line code eval!}.each do |meth|
+        def_delegator :@magic_proc, meth.to_sym
+      end
 
       def initialize(block)
         @magic_proc = MagicProc.new(block)
-      end
-
-      def eval!
-        eval(code, nil, file, line)
       end
 
       private
