@@ -55,6 +55,11 @@ references are lost. A workaround for this problem is:
 
   Otaku.process('hello') # >> '* hello *'
 
+Anything that can be marshalled can be passed as a context. The exception is
+proc, which cannot be marshalled, yet it can still be passed in. However, in
+the process, all contextual references within the proc are lost, so u may
+want to exercise care when playing with proc.
+
 == Configuraing It
 
 Otaku ships with the following defaults:
