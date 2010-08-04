@@ -90,10 +90,6 @@ Configuring can be done via:
 
   Otaku.init_wait_time = 10
 
-== TODO
-
-1. Currently, only integration testing is done ...
-
 == Note on Patches/Pull Requests
 
 * Fork the project.
