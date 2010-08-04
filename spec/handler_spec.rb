@@ -15,12 +15,12 @@ describe "Otaku Service Handler" do
   describe '>> initializing context' do
 
     should 'assign to empty anoynmous class instance code when given {}' do
-      Otaku::Handler.new({}, lambda{}).context.should.equal('Class.new{  }.new')
+      Otaku::Handler.new({}, lambda{}).context.code.should.equal('Class.new{  }.new')
     end
 
     should 'assign to non-empty anoynmous class instance code when given {:m1 => v1, :m2 => v2, ...}' do
       encode = lambda{|val| Otaku::Encoder.encode(val).gsub('|','\|') }
-      Otaku::Handler.new({:m1 => 'v|1', :m2 => 'v|2'}, lambda{}).context.should.equal(
+      Otaku::Handler.new({:m1 => 'v|1', :m2 => 'v|2'}, lambda{}).context.code.should.equal(
         'Class.new{ %s; %s }.new' % [
           "def m1; Encoder.decode(%|#{encode['v|1']}|); end",
           "def m2; Encoder.decode(%|#{encode['v|2']}|); end"
@@ -135,7 +135,7 @@ describe "Otaku Service Handler" do
       ),
     }.each do |debug, block|
       should "handle proc as variable [##{debug}]" do
-        Otaku::Handler.new({}, block).proc.should.equal(expected)
+        Otaku::Handler.new({}, block).processor.code.should.equal(expected)
       end
     end
 
@@ -144,7 +144,7 @@ describe "Otaku Service Handler" do
         %w{a b}.map do |x|
           puts x
         end
-      end.proc.should.equal(expected)
+      end.processor.code.should.equal(expected)
     end
 
     should "handle block using do ... end [##{__LINE__}]" do
@@ -152,29 +152,29 @@ describe "Otaku Service Handler" do
         %w{a b}.map do |x|
           puts x
         end
-      end.proc.should.equal(expected)
+      end.processor.code.should.equal(expected)
     end
 
     should "handle block using do ... end [##{__LINE__}]" do
       Otaku.start({}) do |watever|
         %w{a b}.map do |x| puts x end
-      end.proc.should.equal(expected)
+      end.processor.code.should.equal(expected)
     end
 
     should "handle block using do ... end [##{__LINE__}]" do
       Otaku.start do |watever|
         %w{a b}.map do |x| puts x end
-      end.proc.should.equal(expected)
+      end.processor.code.should.equal(expected)
     end
 
     should "handle block using do ... end [##{__LINE__}]" do
       Otaku.start({}) do |watever| %w{a b}.map do |x| puts x end end.
-        proc.should.equal(expected)
+        processor.code.should.equal(expected)
     end
 
     should "handle block using do ... end [##{__LINE__}]" do
       Otaku.start do |watever| %w{a b}.map do |x| puts x end end.
-        proc.should.equal(expected)
+        processor.code.should.equal(expected)
     end
 
     should "handle block using { ... } [##{__LINE__}]" do
@@ -182,7 +182,7 @@ describe "Otaku Service Handler" do
         %w{a b}.map do |x|
           puts x
         end
-      }.proc.should.equal(expected)
+      }.processor.code.should.equal(expected)
     end
 
     should "handle block using { ... } [##{__LINE__}]" do
@@ -190,36 +190,36 @@ describe "Otaku Service Handler" do
         %w{a b}.map do |x|
           puts x
         end
-      }.proc.should.equal(expected)
+      }.processor.code.should.equal(expected)
     end
 
     should "handle block using { ... } [##{__LINE__}]" do
       Otaku.start({}) { |watever|
         %w{a b}.map { |x| puts x }
-      }.proc.should.equal(expected)
+      }.processor.code.should.equal(expected)
     end
 
     should "handle block using { ... } [##{__LINE__}]" do
       Otaku.start { |watever|
         %w{a b}.map { |x| puts x }
-      }.proc.should.equal(expected)
+      }.processor.code.should.equal(expected)
     end
 
     should "handle block using { ... } [##{__LINE__}]" do
-      Otaku.start({}) { |watever| %w{a b}.map { |x| puts x } }.proc.should.equal(expected)
+      Otaku.start({}) { |watever| %w{a b}.map { |x| puts x } }.processor.code.should.equal(expected)
     end
 
     should "handle block using { ... } [##{__LINE__}]" do
-      Otaku.start { |watever| %w{a b}.map { |x| puts x } }.proc.should.equal(expected)
+      Otaku.start { |watever| %w{a b}.map { |x| puts x } }.processor.code.should.equal(expected)
     end
 
     should "leave __FILE__ as __FILE__ [##{__LINE__}]" do
-      Otaku.start { |watever| __FILE__ }.proc.should.
+      Otaku.start { |watever| __FILE__ }.processor.code.should.
         equal("lambda { |watever| __FILE__ }" % File.expand_path('spec/handler_spec.rb'))
     end
 
     should "leave __LINE__ as __LINE__ [##{__LINE__}]" do
-      Otaku.start { |watever| __LINE__ }.proc.should.
+      Otaku.start { |watever| __LINE__ }.processor.code.should.
         equal("lambda { |watever| __LINE__ }")
     end
 

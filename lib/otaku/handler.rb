@@ -1,31 +1,41 @@
 module Otaku
   class Handler
 
+    attr_reader :context, :processor
+
     def initialize(context, handler)
-      @context = __context_as_code__(context)
-      magic_proc = MagicProc.new(handler)
-      @proc, @file, @line = [:code, :file, :line].map{|meth| magic_proc.send(meth) }
+      @context = Context.new(context)
+      @processor = Processor.new(handler)
     end
 
     def process(data)
-      (instance = eval(@context, nil, '(generated class)', 1)).
-        instance_exec(data, &(block = eval(@proc, nil, @file, @line)))
+      @context.eval!.instance_exec(data, &@processor.eval!)
     end
 
     def root
-      File.dirname(@file)
+      File.dirname(@processor.file)
     end
 
     private
 
-      def __context_as_code__(methods_hash)
-        'Class.new{ %s }.new' %
-          methods_hash.map do |method, val|
-            "def #{method}; Encoder.decode(%|#{Encoder.encode(val).gsub('|','\|')}|); end"
-          end.sort.join('; ')
+      class Context
+
+        attr_reader :code
+
+        def initialize(methods_hash)
+          @code = 'Class.new{ %s }.new' %
+            methods_hash.map do |method, val|
+              "def #{method}; Encoder.decode(%|#{Encoder.encode(val).gsub('|','\|')}|); end"
+            end.sort.join('; ')
+        end
+
+        def eval!
+          eval(@code, nil, '(generated class)', 1)
+        end
+
       end
 
-      class MagicProc
+      class Processor
 
         RUBY_PARSER = RubyParser.new
         RUBY_2_RUBY = Ruby2Ruby.new
@@ -35,6 +45,11 @@ module Otaku
         def initialize(block)
           @block = block
           extract_file_and_line_and_code
+          @block = nil
+        end
+
+        def eval!
+          eval(@code, nil, @file, @line)
         end
 
         private
