@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'forwardable'
 require 'eventmachine'
 require 'logger'
 require 'base64'
