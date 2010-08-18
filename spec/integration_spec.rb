@@ -25,26 +25,15 @@ describe "Otaku Service" do
       Otaku.process('hello').should.equal '~ hello ~'
     end
 
-    should 'raise Otaku::DataProcessError w proc that has contextual reference yet has no specified context' do
+    should 'succeed w proc that has contextual reference' do
       mark = '*'
-      Otaku.start{|data| '%s %s %s' % [mark, data, mark] }
-      lambda { Otaku.process('hello') }.should.raise(Otaku::DataProcessError).
-        message.should.match(/#<NameError: undefined local variable or method `mark' for /)
-    end
-
-    should 'succeed w proc that has non-proc contextual reference & has context specified' do
-      Otaku.start(:mark => '*') {|data| '%s %s %s' % [mark, data, mark] }
-      Otaku.process('hello').should.equal('* hello *')
-    end
-
-    should 'succeed w proc that has proc contextual reference & has context specified' do
-      Otaku.start(:mark => lambda { '*' }) {|data| '%s %s %s' % [mark.call, data, mark.call] }
+      Otaku.start {|data| '%s %s %s' % [mark, data, mark] }
       Otaku.process('hello').should.equal('* hello *')
     end
 
     should 'reflect __FILE__ as captured when declaring proc' do
-      Otaku.start{|data| __FILE__ }
-      Otaku.process(:watever_data).should.equal(File.expand_path(__FILE__))
+      Otaku.start {|data| __FILE__ }
+      Otaku.process(:watever_data).should.equal(__FILE__)
     end
 
     should 'reflect __LINE__ as captured when declaring proc' do
@@ -53,12 +42,18 @@ describe "Otaku Service" do
     end
 
     should 'have $LOAD_PATH include Otaku.root' do
-      Otaku.start{|data| $LOAD_PATH }
+      Otaku.start do |data|
+        @@_not_isolated_vars = :global
+        $LOAD_PATH
+      end
       Otaku.process(:watever_data).should.include(Otaku.root)
     end
 
     should 'have $LOAD_PATH include Otaku::Server#handler.root' do
-      Otaku.start{|data| $LOAD_PATH }
+      Otaku.start do |data|
+        @@_not_isolated_vars = :global
+        $LOAD_PATH
+      end
       Otaku.process(:watever_data).should.include(Otaku::Server.handler.root)
     end
 

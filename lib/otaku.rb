@@ -3,8 +3,7 @@ require 'forwardable'
 require 'eventmachine'
 require 'logger'
 require 'base64'
-require 'ruby2ruby'
-require 'ruby_parser'
+require 'serializable_proc'
 
 require 'otaku/encoder'
 require 'otaku/handler'
@@ -16,12 +15,15 @@ module Otaku
   class HandlerNotDefinedError < Exception ; end
   class DataProcessError < Exception ; end
 
+  # Registers support for serializable proc (only needed for static code analysis)
+  SerializableProc::Parsers::Static.matchers << 'Otaku\.start'
+
   DEFAULTS = {
     :ruby => 'ruby',
     :address => '127.0.0.1',
     :port => 10999,
     :log_file => '/tmp/otaku.log',
-    :init_wait_time => 2 * (RUBY_PLATFORM =~ /java/i ? 3 : 1)
+    :init_wait_time => 2 * (RUBY_PLATFORM =~ /java/i ? 5 : 1)
   }
 
   class << self
@@ -43,9 +45,9 @@ module Otaku
       File.expand_path(File.dirname(__FILE__))
     end
 
-    def start(context = {}, &handler)
+    def start(&handler)
       raise HandlerNotDefinedError unless block_given?
-      Server.handler = Handler.new(context, handler)
+      Server.handler = Handler.new(handler)
       Server.start
     end
 

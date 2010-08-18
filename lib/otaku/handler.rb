@@ -1,32 +1,33 @@
-require 'otaku/handler/magic_proc'
-require 'otaku/handler/context'
-require 'otaku/handler/processor'
-
 module Otaku
   class Handler
 
-    attr_reader :context, :processor
+    extend Forwardable
+    def_delegator :@proc, :root
 
-    def initialize(context, handler)
-      @context = Context.new(context)
-      @processor = Processor.new(handler)
+    def initialize(handler)
+      @proc = SerializableProc.new(&handler)
     end
 
     def process(data)
-      @context.eval!.instance_exec(data, &@processor.eval!)
-    end
-
-    def root
-      File.dirname(@processor.file)
+      @proc.call(data)
     end
 
     def marshal_dump
-      [@context, @processor]
+      @proc
     end
 
     def marshal_load(data)
-      @context, @processor = data
+      @proc = data
     end
 
+    private
+
+      class SerializableProc < ::SerializableProc #:nodoc:
+        def root
+          File.dirname(@file)
+        end
+      end
+
   end
+
 end

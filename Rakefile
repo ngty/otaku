@@ -12,8 +12,7 @@ begin
     gem.authors = ["NgTzeYang"]
     gem.add_development_dependency "bacon", ">= 0"
     gem.add_dependency "eventmachine", ">= 0.12.10"
-    gem.add_dependency "ruby2ruby", ">= 1.2.4"
-    gem.add_dependency "ruby_parser", ">= 2.0.4"
+    gem.add_dependency "serializable_proc", ">= 0.3.0"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
