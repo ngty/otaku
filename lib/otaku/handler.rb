@@ -1,15 +1,16 @@
 module Otaku
   class Handler
 
-    extend Forwardable
-    def_delegator :@proc, :root
-
     def initialize(handler)
       @proc = SerializableProc.new(&handler)
     end
 
     def process(data)
       @proc.call(data)
+    end
+
+    def root
+      @proc.file
     end
 
     def marshal_dump
@@ -20,14 +21,10 @@ module Otaku
       @proc = data
     end
 
-    private
+  end
 
-      class SerializableProc < ::SerializableProc #:nodoc:
-        def root
-          File.dirname(@file)
-        end
-      end
-
+  class ::SerializableProc
+    attr_reader :file
   end
 
 end

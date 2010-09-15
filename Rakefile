@@ -4,6 +4,7 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
+    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
     gem.name = "otaku"
     gem.summary = %Q{Dead simple service framework built on eventmachine}
     gem.description = %Q{}
@@ -12,8 +13,7 @@ begin
     gem.authors = ["NgTzeYang"]
     gem.add_development_dependency "bacon", ">= 0"
     gem.add_dependency "eventmachine", ">= 0.12.10"
-    gem.add_dependency "serializable_proc", ">= 0.3.0"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.add_dependency "serializable_proc", ">= 0.4.0"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

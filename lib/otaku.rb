@@ -15,9 +15,6 @@ module Otaku
   class HandlerNotDefinedError < Exception ; end
   class DataProcessError < Exception ; end
 
-  # Registers support for serializable proc (only needed for static code analysis)
-  SerializableProc::Parsers::Static.matchers << 'Otaku\.start'
-
   DEFAULTS = {
     :ruby => 'ruby',
     :address => '127.0.0.1',
