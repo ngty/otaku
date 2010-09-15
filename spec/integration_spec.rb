@@ -38,7 +38,7 @@ describe "Otaku Service" do
 
     should 'reflect __LINE__ as captured when declaring proc' do
       Otaku.start{|data| __LINE__ }
-      Otaku.process(:watever_data).should.equal(__LINE__.pred)
+      Otaku.process(:watever_data).should.equal(__LINE__ - 1)
     end
 
     should 'have $LOAD_PATH include Otaku.root' do
