@@ -5,7 +5,7 @@ Dead simple server/client service built using eventmachine.
 == Introduction
 
 Otaku's original intent is to support testing of cross-process stubbing in
-cross-stub (http://github.com/ngty/cross-stub). It's usefulness in other
+CrossStub (http://github.com/ngty/cross-stub). It's usefulness in other
 aspects of my hacking life prompts me to extract it out, & package it as a
 generic solution. Its primary intent is to be dead simple to use & easy to
 customize, of course, both criteria subjected to very my own tastes.
@@ -14,7 +14,7 @@ customize, of course, both criteria subjected to very my own tastes.
 
 It's hosted on rubygems.org:
 
-  $ sudo gem install otaku
+  $ gem install otaku
 
 == Using It
 
@@ -33,32 +33,29 @@ It's hosted on rubygems.org:
   Otaku.process('hello')
   # >> '~ hello ~'
 
-=== Unfortunately ...
+=== Wait a minute, how abt contextual references ??
 
-Most of the times, we won't have anything as simple as above, the following
-illustrates the problem of contextual reference:
-
-  mark = '*'
-  Otaku.start do |data|
-    '%s %s %s' % [mark, data, mark]
-  end
-
-  Otaku.process('hello') # failure !!
-
-The reason is that the proc that we passed to Otaku.start is being marshalled
-while being passed to the server as a handler, in the process, the contextual
-references are lost. A workaround for this problem is:
+Previously, when there is references to local variables outside the proc, we need
+to start Otaku in a very awkward manner:
 
   Otaku.start(:mark => '*') do |data|
     '%s %s %s' % [mark, data, mark]
   end
 
-  Otaku.process('hello') # >> '* hello *'
+  Otaku.process('hello')
+  # >> '* hello *'
 
-Anything that can be marshalled can be passed as a context. The exception is
-proc, which cannot be marshalled, yet it can still be passed in. However, in
-the process, all contextual references within the proc are lost, so u may
-want to exercise care when playing with proc.
+This is no longer needed from release-0.4.0 onwards, thanks to the help with
+SerializableProc (http://github.com/ngty/serializable_proc), contextual references
+to global, class, instance & local variables are automatically taken care of:
+
+  x, @x, @@x, $x = 'lx', 'ix', 'cx', 'gx'
+  Otaku.start do |data|
+    [x, @x, @@x, $x].join(data)
+  end
+
+  Otaku.process(' & ')
+  # >> 'lx & ix & cx & gx'
 
 == Configuraing It
 
